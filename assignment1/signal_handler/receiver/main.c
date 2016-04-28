@@ -4,6 +4,7 @@
 
 volatile sig_atomic_t flag = 0;
 
+// Signal handler funtion, linked with all signals
 void signalHandler(int signum){
     flag = signum;
 }
@@ -13,14 +14,17 @@ int main(int argc, char* argv[]){
     int busy_wait = 0;
     int loop = 1;
 
+    // Check for wrong number of arguments
     if (argc > 2){
         perror("Too many aruments. Type --help for usage");
-        return -1;
+        exit(1);
     }
     else if (argc == 2){
+        // Help and proper treatment
         if (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h")){
-            printf("Usage: ./receiver --busy (for busy wait loop)\n");
-            printf("       ./receiver (for blocking wait loop)\n");
+            printf("Usage: ./app_receiver --busy (for busy wait loop)\n");
+            printf("       ./app_receiver (for blocking wait loop)\n");
+            return 0;
         }
         else if (!strcmp(argv[1], "--busy")){
             busy_wait = 1;
@@ -34,9 +38,11 @@ int main(int argc, char* argv[]){
     signal(SIGUSR2, signalHandler);
 
     while (loop){
+        // Busy wait
         if (!busy_wait){
             pause();
         }
+        // Do things for signal handling since printf is bad
         if (flag){
             switch(flag){
                 case 2:
@@ -53,6 +59,7 @@ int main(int argc, char* argv[]){
                     printf("User action 2!\n");
                     break;
             }
+            // Reset flag
             flag = 0;
         }
     }
