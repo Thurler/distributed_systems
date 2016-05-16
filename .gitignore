@@ -4,3 +4,4 @@ app_pipes
 app_client
 app_server
 app_adder
+app_semaphores
