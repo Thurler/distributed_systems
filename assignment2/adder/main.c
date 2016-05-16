@@ -84,8 +84,7 @@ int main(int argc, char const *argv[]){
     if (argc == 2 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h"))){
         printf("Usage: ./app_adder <N> <K> <busy wait flag>\n"
                "       N: Number of numbers to generate\n"
-               "       K: Number of threads to use\n"
-               "       To avoid busy wait, use --no_spinlock\n");
+               "       K: Number of threads to use\n");
         exit(0);
     }
 
