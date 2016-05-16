@@ -1,6 +1,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define MEMLIMIT 1000000000
 
 pthread_mutex_t mutexsum; // Globally visible mutex
 
@@ -61,6 +62,16 @@ signed char *generate_numbers(size_t n){
 
 }
 
+// Return smaller of two numbers
+size_t min(size_t a, size_t b){
+
+    if (a < b){
+        return a;
+    }
+
+    return b;
+}
+
 int main(int argc, char const *argv[]){
 
     srand(time(NULL));
@@ -89,9 +100,6 @@ int main(int argc, char const *argv[]){
     // Get number of threads to use
     n_threads = atoi(argv[2]);
 
-    // Generate N random numbers between -100 and 100
-    signed char *numbers = generate_numbers(n_numbers);
-
     // Configure pthread - number of threads
     pthread_t threads[n_threads];
 
@@ -116,50 +124,64 @@ int main(int argc, char const *argv[]){
     sum = (signed long long int *)malloc(sizeof(signed long long int));
     *sum = 0;
 
-    // Compute individual thread load and remainder in case of uneven division
-    size_t load = n_numbers / n_threads;
-    size_t rest = n_numbers - (load * n_threads);
-
     // Create threads and assign work for them
-    size_t t, rc;
-    for (t = 0; t < n_threads; t++){
-        // Initialize thread data for this thread
-        thread_data_array[t].thread_id = t; // Id is current iteration
-        if (t == (n_threads - 1)){
-            // Last thread should work slightly more to cover for uneven division
-            thread_data_array[t].iterations = load + rest;
-        }
-        else {
-            thread_data_array[t].iterations = load;
-        }
-        // Pass a reference to the first number the thread should compute
-        thread_data_array[t].data = &numbers[t * load];
-        thread_data_array[t].sum = sum;
-        rc = pthread_create(&threads[t], &attr, threadSum, (void *) &thread_data_array[t]);
-        if (rc){
-            perror("Could not create thread");
-            exit(-1);
-        }
-    }
-
-    // Free thread attribute - no more threads to make
-    pthread_attr_destroy(&attr);
-
+    size_t i, n, t, load, rest, rc, rounds;
+    signed char *numbers;
     void *status;
-    // Wait for all threads to join back
-    for (t = 0; t < n_threads; t++){
-        rc = pthread_join(threads[t], &status);
-        if (rc){
-            perror("Thread returned an error");
-            exit(-1);
+
+    rounds = (n_numbers / (MEMLIMIT+1)) + 1;
+
+    for (i = 0; i < rounds; i++){
+
+        // Generate N random numbers between -100 and 100
+        // Caps at 10^9 for memory reasons
+        n = min(n_numbers, MEMLIMIT);
+        numbers = generate_numbers(n);
+        n_numbers -= n;
+
+        // Compute individual thread load and remainder in case of uneven division
+        load = n / n_threads;
+        rest = n - (load * n_threads);
+
+        for (t = 0; t < n_threads; t++){
+            // Initialize thread data for this thread
+            thread_data_array[t].thread_id = t; // Id is current iteration
+            if (t == (n_threads - 1)){
+                // Last thread should work slightly more to cover for uneven division
+                thread_data_array[t].iterations = load + rest;
+            }
+            else {
+                thread_data_array[t].iterations = load;
+            }
+            // Pass a reference to the first number the thread should compute
+            thread_data_array[t].data = &numbers[t * load];
+            thread_data_array[t].sum = sum;
+            rc = pthread_create(&threads[t], &attr, threadSum, (void *) &thread_data_array[t]);
+            if (rc){
+                perror("Could not create thread");
+                exit(-1);
+            }
         }
+
+        // Wait for all threads to join back
+        for (t = 0; t < n_threads; t++){
+            rc = pthread_join(threads[t], &status);
+            if (rc){
+                perror("Thread returned an error");
+                exit(-1);
+            }
+        }
+
+        // Free numbers for next round
+        free(numbers);
+
     }
 
     printf("Finished runnning. Final result: %lli.\n", *sum);
 
     // Free memory
+    pthread_attr_destroy(&attr);
     pthread_mutex_destroy(&mutexsum);
-    free(numbers);
     free(thread_data_array);
     free(sum);
 
