@@ -1,9 +1,3 @@
-app_sender
-app_receiver
-app_pipes
-app_client
-app_server
-app_adder
-app_semaphores
-tests.sh
+app_*
 logs
+*csv
