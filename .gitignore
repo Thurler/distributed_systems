@@ -5,3 +5,5 @@ app_client
 app_server
 app_adder
 app_semaphores
+tests.sh
+logs

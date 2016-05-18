@@ -31,7 +31,7 @@ void *threadSum(void *arg){
     }
 
     //Finished adding, put result on heap variable
-    while(pthread_mutex_trylock(&mutexsum));
+    pthread_mutex_lock(&mutexsum);
     *sum_dest += sum;
     pthread_mutex_unlock(&mutexsum);
 
