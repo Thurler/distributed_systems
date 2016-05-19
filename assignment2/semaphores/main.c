@@ -2,6 +2,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #define RANDOMS 10000
 #define RMAX 10000000
 #define EMPTY 0
@@ -36,7 +37,8 @@ size_t genrandom(){
 // Check if a number is prime
 size_t isPrime(size_t n){
     size_t i;
-    for (i = 2; i <= n/2; i++){
+    size_t limit = pow(n, 0.5);
+    for (i = 2; i <= limit; i++){
         if (n%i == 0) return 0;
     }
     return 1;
@@ -112,7 +114,7 @@ void *consume(void *arg){
         pthread_mutex_lock(&mutexRead);
         pos = findNotEmpty(shared, size);
         val = shared[pos];
-        shared[pos] = 0;
+        shared[pos] = EMPTY;
         // Unlock access
         pthread_mutex_unlock(&mutexRead);
         // Signal write access

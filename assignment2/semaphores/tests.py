@@ -34,14 +34,15 @@ for p in [1, 2, 5, 10]:
             times[(p, c)][n] = avg
 
 # Finally, we save the results as a csv file
-out = open("results.csv", 'w')
+# out = open("results.csv", 'w')
 for r in times.keys():
     p, c = r
     line = "(%i, %i)," % (p, c)
-    for n in times[r].keys():
+    for n in sorted(times[r].keys()):
+        print n
         line += "%f," % (times[r][n])
     line = line[:-1] + "\n"
-    out.write(line)
-out.close()
+    # out.write(line)
+# out.close()
 
 print "DONE!"

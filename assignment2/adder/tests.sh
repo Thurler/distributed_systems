@@ -1,7 +1,7 @@
 #!/bin/bash
 #This script runs the adder app with specific configs, timing them all
 
-for p in 10
+for p in 8 9 10
 do
     for K in 1 2 3 4 5 6 7 8 9 10 15 20 30
     do
